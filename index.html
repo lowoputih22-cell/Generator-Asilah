@@ -374,6 +374,8 @@ input, select, textarea {
 </head>
 
 <body>
+<div id="printArea" style="display:none"></div>
+
 <div id="toast"></div>
 
 <!-- RESET CONFIRM -->
@@ -775,6 +777,8 @@ function openPreview(){
         </html>
     `);
     doc.close();
+// SIMPAN html ke printArea untuk PDF
+document.getElementById("printArea").innerHTML = html;
 
     setTimeout(() => {
         frame.contentWindow.focus();
@@ -843,8 +847,8 @@ function saveEdit(){
 
     toast("Soal diperbarui!");
 }
-function downloadPDF(){
-    if(!daftar.length){
+function downloadPDF() {
+    if (!daftar.length) {
         toast("Belum ada soal");
         return;
     }
@@ -854,35 +858,36 @@ function downloadPDF(){
     let fan = document.getElementById("fan").value;
     let kelas = document.getElementById("kelas").value;
 
-    // Generate ulang HTML seperti openPreview()
-    let frame = document.getElementById("printFrame");
-    let doc = frame.contentWindow.document;
+    // Input judul PDF (opsional)
+    let customTitle = document.getElementById("judulPdf")?.value.trim();
+    let filename = customTitle !== "" ? customTitle : `${kelas} - ${fan}`;
 
-    // Buat isi PDF
-    let pageHTML = `
-    <div id='paperPDF' style='width:210mm; min-height:330mm; padding:15mm; box-sizing:border-box;'>
-        ${document.querySelector(".paper") ? document.querySelector(".paper").innerHTML : "" }
-    </div>
-    `;
+    // Ambil konten hasil openPreview
+    let html = document.getElementById("printArea").innerHTML;
 
-    // Buat node untuk PDF
-    let temp = document.createElement("div");
-    temp.innerHTML = pageHTML;
-    document.body.appendChild(temp);
+    // Bungkus HTML untuk PDF
+    let wrapper = document.createElement("div");
+    wrapper.style.width = "210mm";
+    wrapper.style.minHeight = "330mm";
+    wrapper.style.padding = "15mm";
+    wrapper.style.boxSizing = "border-box";
+    wrapper.innerHTML = html;
+
+    document.body.appendChild(wrapper);
 
     let opt = {
         margin: 10,
-        filename: `${fan}-${kelas}.pdf`,
-        image: { type: 'jpeg', quality: 1 },
+        filename: filename + ".pdf",
+        image: { type: "jpeg", quality: 1 },
         html2canvas: { scale: 3 },
-        jsPDF: { unit: 'mm', format: [210,330], orientation: 'portrait' }
+        jsPDF: { unit: "mm", format: [210, 330], orientation: "portrait" }
     };
 
-    html2pdf().set(opt).from(temp).save().then(()=>{
-        temp.remove();
+    html2pdf().set(opt).from(wrapper).save().then(() => {
+        wrapper.remove();
     });
 }
-function downloadPDF() {
+
     if (!daftar.length) {
         toast("Belum ada soal");
         return;
