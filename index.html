@@ -1,19 +1,32 @@
 <!doctype html>
 <html lang="id">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Generator Soal Pesantren</title>
+
+<!-- Font Arab: Scheherazade New (dipertahankan) -->
+<link href="https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
 /* --------------------------------------------------------------
    GLOBAL STYLE
 -------------------------------------------------------------- */
-body{
+:root{
+  --primary:#4c82ff;
+  --danger:#d33;
+  --card-bg:#fff;
+  --page-bg:#eaf0f9;
+}
+
+html,body{
     margin:0;
-    background:#eaf0f9;
+    background:var(--page-bg);
     font-family:Arial, Helvetica, sans-serif;
     padding:20px;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    color:#222;
 }
 
 .wrap{
@@ -25,13 +38,16 @@ body{
    CARD
 -------------------------------------------------------------- */
 .card{
-    background:white;
+    background:var(--card-bg);
     padding:22px;
     border-radius:26px;
     box-shadow:0 8px 24px rgba(0,0,0,0.09);
     margin-bottom:22px;
 }
 
+h2,h3{ margin:0 0 12px 0; }
+
+/* labels */
 label{
     font-weight:600;
     font-size:14px;
@@ -48,6 +64,7 @@ input, select{
     background:#f9fbff;
     font-size:15px;
     margin-bottom:14px;
+    box-sizing:border-box;
 }
 
 /* textarea soal */
@@ -61,6 +78,7 @@ textarea{
     min-height:140px;
     resize:none;
     box-shadow:inset 0 0 5px rgba(0,0,0,0.03);
+    box-sizing:border-box;
 }
 
 /* toggle */
@@ -94,20 +112,20 @@ textarea{
 }
 .toggleKnob.rtl{ left:29px; }
 
-/* tombol */
+/* tombol utama */
 button{
     width:100%;
     padding:12px;
     font-size:15px;
     border:none;
     border-radius:14px;
-    background:#4c82ff;
+    background:var(--primary);
     color:white;
     font-weight:600;
     margin-top:10px;
     cursor:pointer;
 }
-button.red{ background:#d33; }
+button.red{ background:var(--danger); }
 button.small{
     font-size:13px;
     padding:8px 14px;
@@ -124,6 +142,7 @@ table td{
     padding:7px;
     border-bottom:1px solid #e6e8ee;
     font-size:14px;
+    vertical-align:top;
 }
 .iconBtn{
     padding:6px 10px;
@@ -139,23 +158,14 @@ table td{
     color:#c22;
 }
 
-/* PRINT AREA */
+/* PRINT AREA (style untuk PDF) */
 .paper{
     width:210mm;
     min-height:330mm;
     padding:15mm;
     box-sizing:border-box;
     font-size:14px;
-}
-
-/* tombol di modal */
-.modalActions{
-    padding:14px;
-    display:flex;
-    gap:10px;
-}
-.modalActions button{
-    flex:1;
+    color:#000;
 }
 
 /* --------------------------------------------------------------
@@ -166,7 +176,7 @@ table td{
     top:-80px;
     left:50%;
     transform:translateX(-50%);
-    background:#4c82ff;
+    background:var(--primary);
     color:white;
     padding:14px 24px;
     border-radius:12px;
@@ -176,263 +186,135 @@ table td{
     z-index:999999;
     opacity:0;
 }
+#toast.show{ top:20px; opacity:1; }
 
-#toast.show{
-    top:20px;
-    opacity:1;
-}
-
-/* --------------------------------------------------------------
-   RESET CONFIRM MODAL
--------------------------------------------------------------- */
-#confirmOverlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.35);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 99999;
-}
-#deleteOverlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.35);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 99999;
-}
-#deleteBox {
-    background: white;
-    padding: 24px;
-    width: 85%;
-    max-width: 360px;
-    border-radius: 18px;
-    text-align: center;
-}
-#deleteBox h3 {
-    margin-top: 0;
-    font-size: 18px;
-}
-#deleteBox button {
-    margin-top: 14px;
-}
-#confirmBox{
-    background:white;
-    padding:24px;
-    width:85%;
-    max-width:360px;
-    border-radius:18px;
-    text-align:center;
-    margin-left:auto;      /* << center horizontal */
-    margin-right:auto;     /* << center horizontal */
-}
-#confirmBox h3{
-    margin-top:0;
-    font-size:18px;
-}
-#confirmBox button{
-    margin-top:14px;
-}
-
-/* --------------------------------------------------------------
-   PRINT PDF SETTINGS
--------------------------------------------------------------- */
-@media print{
-    @page{
-        size: 210mm 330mm; /* F4 */
-        margin: 0.5mm; /* 1.5 cm */
-    }
-}
-#fan {
-    box-sizing: border-box !important;
-}
-input, select, textarea {
-    box-sizing: border-box;
-}
-.toggleBox {
-    box-sizing: border-box !important;
-    width: 100%;
-}
-@media print {
-  @page {
-    size: 210mm 330mm; /* F4 / Folio */
-    margin: 10mm; /* bebas mau diganti */
-  }
-}
-/* Background gelap transparan */
+/* MODAL BACKDROP */
 .modal {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.45);
   backdrop-filter: blur(2px);
   justify-content: center;
   align-items: center;
   z-index: 999;
 }
 
-/* Box edit */
+/* Box untuk modal kecil (edit / rename) */
 .edit-box {
-  width: 90%;
+  width: 92%;
   max-width: 420px;
   background: #fff;
   border-radius: 18px;
-  padding: 22px;
+  padding: 18px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-  animation: pop 0.25s ease;
+  animation: pop 0.22s ease;
 }
-
 @keyframes pop {
-  from { transform: scale(0.85); opacity: 0; }
-  to   { transform: scale(1); opacity: 1; }
+  from { transform: translateY(8px) scale(0.98); opacity: 0; }
+  to   { transform: translateY(0) scale(1); opacity: 1; }
 }
-
 .modal-title {
   text-align: center;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
   color: #333;
 }
 
-/* Label */
-.input-label {
-  font-size: 14px;
-  font-weight: 600;
-  margin-top: 10px;
-  color: #444;
+/* Label & input pada modal */
+.input-label { font-size:14px; font-weight:600; margin-top:8px; }
+.input-field { width:100%; padding:10px 12px; margin-top:6px; border-radius:10px; border:1px solid #ddd; background:#fafafa; font-size:15px; box-sizing:border-box; }
+
+/* Textarea kecil */
+.textarea { height:80px; resize:none; }
+
+/* Modal actions */
+.modal-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:12px; }
+.btn { padding:10px 16px; border-radius:12px; font-size:14px; font-weight:600; border:none; cursor:pointer; }
+.btn.cancel { background:#eee; color:#444; }
+.btn.save { background:var(--primary); color:white; }
+
+/* ARABIC font enforcement for RTL content */
+.arabic, [dir="rtl"] {
+    font-family: 'Scheherazade New', serif !important;
+    /* sesuaikan ukuran untuk tampilan & PDF */
+    -webkit-font-feature-settings: "kern" 1;
+    font-size:16px;
+    line-height:1.6;
 }
 
-/* Input */
-.input-field {
-  width: 100%;
-  padding: 10px 12px;
-  margin-top: 5px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-  background: #fafafa;
-  font-size: 15px;
-  transition: 0.2s;
-}
+/* untuk area preview PDF (konten yang di-inject ke iframe / html2pdf) */
+.pdf-arabic { font-family: 'Scheherazade New', serif !important; }
 
-.input-field:focus {
-  border-color: #4b8cff;
-  box-shadow: 0 0 0 3px rgba(75,140,255,0.25);
-  background: white;
-}
-
-/* Textarea */
-.textarea {
-  height: 80px;
-  resize: none;
-}
-
-/* Tombol */
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 18px;
-  gap: 10px;
-}
-
-.btn {
-  padding: 10px 18px;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: 0.2s ease;
-}
-
-.btn.cancel {
-  background: #eee;
-  color: #444;
-}
-
-.btn.cancel:hover {
-  background: #ddd;
-}
-
-.btn.save {
-  background: #4b8cff;
-  color: white;
-}
-
-.btn.save:hover {
-  background: #3576e6;
+/* responsive kecil */
+@media (max-width:520px){
+  .card{ padding:16px; border-radius:18px; }
+  textarea{ min-height:120px; }
 }
 </style>
-<link href="https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 
 <body>
-<div id="printArea" style="display:none"></div>
-
-<div id="toast"></div>
+<div id="toast" role="status" aria-live="polite"></div>
 
 <!-- RESET CONFIRM -->
-<div id="confirmOverlay">
-    <div id="confirmBox">
-        <h3>Reset Semua Soal?</h3>
-        <button class="red" onclick="doReset()">Ya, Reset</button>
-        <button style="background:#4c82ff;color:white" onclick="hideConfirm()">Batal</button>
+<div id="confirmOverlay" class="modal" aria-hidden="true">
+    <div class="edit-box" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+        <h3 id="confirmTitle" class="modal-title">Reset Semua Soal?</h3>
+        <div style="display:flex; gap:10px; margin-top:12px;">
+            <button class="btn cancel" onclick="hideConfirm()">Batal</button>
+            <button class="btn save" style="background:var(--danger);" onclick="doReset()">Ya, Reset</button>
+        </div>
     </div>
 </div>
 
 <!-- DELETE CONFIRM -->
-<div id="deleteOverlay">
-    <div id="deleteBox">
-        <h3>Hapus Soal Ini?</h3>
-        <button class="red" onclick="doDelete()">Ya, Hapus</button>
-        <button style="background:#4c82ff;color:white" onclick="hideDeleteConfirm()">Batal</button>
+<div id="deleteOverlay" class="modal" aria-hidden="true">
+    <div class="edit-box" role="dialog" aria-modal="true">
+        <h3 class="modal-title">Hapus Soal Ini?</h3>
+        <div style="display:flex; gap:10px; margin-top:12px;">
+            <button class="btn cancel" onclick="hideDeleteConfirm()">Batal</button>
+            <button class="btn save" style="background:var(--danger);" onclick="doDelete()">Ya, Hapus</button>
+        </div>
     </div>
 </div>
 
 <div class="wrap">
 
     <!-- INPUT -->
-    <div class="card">
+    <div class="card" id="inputCard">
         <h2 style="margin-top:0;text-align:center">Generator Soal Pesantren</h2>
 
         <label>Semester</label>
-        <select id="semester">
+        <select id="semester" aria-label="Semester">
             <option value="I">Semester I</option>
             <option value="II">Semester II</option>
         </select>
 
         <label>Tahun Pelajaran</label>
-        <input id="tahun" placeholder="2025/2026">
+        <input id="tahun" placeholder="2025/2026" aria-label="Tahun Pelajaran">
 
         <label>Fan / Mapel (Arab)</label>
-        <input id="fan" placeholder="مثال : التوحيد" style="direction:rtl;text-align:right">
+        <input id="fan" placeholder="مثال : التوحيد" style="direction:rtl;text-align:right" aria-label="Fan Mapel">
 
         <label>Kelas</label>
-        <select id="kelas">
+        <select id="kelas" aria-label="Kelas">
             <option>SP (Sekolah Persiapan)</option><option>I (Satu)</option><option>II (Dua)</option>
             <option>III (Tiga)</option><option>IV (Empat)</option><option>I (Satu Putri)</option><option>II (Dua Putri)</option>
             <option>III (Tiga Putri)</option><option>IV (Empat Putri)</option>
         </select>
-		<label>Judul PDF (opsional):</label>
-		<input id="judulPdf" type="text" placeholder="Kosongkan untuk default">
 
         <!-- toggle -->
-        <div class="toggleBox">
+        <div class="toggleBox" aria-hidden="false">
             <span id="modeLabel">Arab (RTL)</span>
-            <div class="toggleBtn" onclick="toggleMode()">
+            <div class="toggleBtn" onclick="toggleMode()" role="button" aria-pressed="true" tabindex="0">
                 <div class="toggleKnob rtl" id="knob"></div>
             </div>
         </div>
 
         <label>Tulis Soal</label>
-        <textarea id="soalInput" dir="rtl" style="text-align:right" placeholder="Tulis soal disini....."></textarea>
+        <textarea id="soalInput" dir="rtl" style="text-align:right" placeholder="Tulis soal disini....." aria-label="Tulis Soal"></textarea>
 
         <button onclick="addSoal()">Tambah Soal</button>
     </div>
@@ -441,91 +323,135 @@ input, select, textarea {
     <div class="card">
         <h3 style="margin-top:0">Daftar Soal (<span id="totalCount">0</span>)</h3>
         <table>
-            <tbody id="tbodySoal"></tbody>
+            <tbody id="tbodySoal" aria-live="polite"></tbody>
         </table>
 
-        <button onclick="openPreview()">Lihat & Print Browser</button>
-		<button style="margin-top:10px;background:#28a745" onclick="downloadPDF()">Download PDF</button>
-        <button class="red" onclick="showConfirm()">Reset</button>
+        <div style="display:flex; gap:10px;">
+            <button onclick="openPreview()" class="small">Lihat & Cetak</button>
+            <button onclick="openRename()" class="small">Download PDF</button>
+            <button class="red" onclick="showConfirm()">Reset</button>
+        </div>
     </div>
 
 </div>
 
-
+<!-- HIDDEN IFRAME (tidak lagi digunakan untuk PDF, tapi tetap ada) -->
 <iframe id="printFrame" style="display:none;"></iframe>
+
+<!-- MODAL EDIT -->
+<div id="editModal" class="modal" aria-hidden="true">
+  <div class="edit-box" role="dialog" aria-modal="true">
+    <h2 class="modal-title">Edit Soal</h2>
+
+    <label class="input-label">Teks Soal</label>
+    <textarea id="editQuestion" class="input-field textarea"></textarea>
+
+    <div class="modal-actions" style="display:flex;justify-content:flex-end;gap:10px;">
+      <button class="btn cancel" onclick="closeEdit()">Batal</button>
+      <button class="btn save" onclick="saveEdit()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RENAME & DOWNLOAD (kecil seperti edit) -->
+<div id="renameModal" class="modal" aria-hidden="true">
+  <div class="edit-box" role="dialog" aria-modal="true">
+    <h2 class="modal-title">Nama File PDF</h2>
+
+    <label class="input-label">Nama File</label>
+    <input id="fileNameInput" class="input-field" />
+
+    <div class="modal-actions" style="display:flex;justify-content:flex-end;">
+      <button class="btn cancel" onclick="closeRename()">Batal</button>
+      <button class="btn save" onclick="confirmDownloadPDF()">Download</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCRIPT: html2pdf (CDN) digunakan untuk export PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+
 <script>
-/* --------------------------------------------------------------
-   DATA
--------------------------------------------------------------- */
+/* -------------------------
+   DATA & INIT
+   ------------------------- */
 let daftar = JSON.parse(localStorage.getItem("soal_asli") || "[]");
-let modeArab = true;
+let modeArab = true; // default RTL
 
 const arabDigits = ["٠","١","٢","٣","٤","٥","٦","٧","٨","٩"];
 
-/* convert angka */
 function toArabicNumber(n){
     return String(n).split("").map(c => /\d/.test(c) ? arabDigits[+c] : c).join("");
 }
 
-/* toast */
 function toast(msg){
-    const t=document.getElementById("toast");
-    t.innerText=msg;
+    const t = document.getElementById("toast");
+    t.innerText = msg;
     t.classList.add("show");
-    setTimeout(()=>{ t.classList.remove("show"); },2200);
+    setTimeout(()=> t.classList.remove("show"), 2200);
 }
 
-/* --------------------------------------------------------------
+/* -------------------------
    RENDER LIST
--------------------------------------------------------------- */
+   ------------------------- */
 function renderList(){
-    const tbody=document.getElementById("tbodySoal");
-    tbody.innerHTML="";
+    const tbody = document.getElementById("tbodySoal");
+    tbody.innerHTML = "";
 
-    daftar.forEach((it,i)=>{
-        let tr=document.createElement("tr");
+    daftar.forEach((it, i) => {
+        const tr = document.createElement("tr");
 
-        let tdNo=document.createElement("td");
-        tdNo.style.fontWeight="700";
-        tdNo.textContent = it.mode==="arab" ? toArabicNumber(i+1) : (i+1);
+        const tdNo = document.createElement("td");
+        tdNo.style.fontWeight = "700";
+        tdNo.style.width = "36px";
+        tdNo.textContent = it.mode === "arab" ? toArabicNumber(i+1) : (i+1);
 
-        let tdText=document.createElement("td");
-        tdText.textContent=it.text;
-        tdText.style.textAlign = it.mode==="arab" ? "right" : "left";
+        const tdText = document.createElement("td");
+        tdText.textContent = it.text;
+        tdText.style.textAlign = it.mode === "arab" ? "right" : "left";
+        if(it.mode === "arab") tdText.classList.add("arabic");
 
-        let tdAct=document.createElement("td");
-        let b1=document.createElement("button");
-        b1.className="iconBtn";
-        b1.textContent="Edit";
-        b1.onclick=()=>editItem(i);
+        const tdAct = document.createElement("td");
+        tdAct.style.textAlign = "right";
+        const b1 = document.createElement("button");
+        b1.className = "iconBtn";
+        b1.textContent = "Edit";
+        b1.onclick = () => editItem(i);
 
-        let b2=document.createElement("button");
-b2.className="iconBtn del";
-b2.textContent="Hapus";
-b2.onclick=()=>showDeleteConfirm(i);
+        const b2 = document.createElement("button");
+        b2.className = "iconBtn del";
+        b2.textContent = "Hapus";
+        b2.onclick = () => showDeleteConfirm(i);
 
-        tdAct.append(b1," ",b2);
+        tdAct.appendChild(b1);
+        tdAct.appendChild(document.createTextNode(" "));
+        tdAct.appendChild(b2);
 
-        tr.append(tdNo,tdText,tdAct);
+        tr.appendChild(tdNo);
+        tr.appendChild(tdText);
+        tr.appendChild(tdAct);
+
         tbody.appendChild(tr);
     });
 
-    document.getElementById("totalCount").innerText=daftar.length;
+    document.getElementById("totalCount").innerText = daftar.length;
 }
 
+/* SAVE */
 function save(){
     localStorage.setItem("soal_asli", JSON.stringify(daftar));
     renderList();
 }
 
-/* --------------------------------------------------------------
+/* -------------------------
    INPUT FUNCTIONS
--------------------------------------------------------------- */
+   ------------------------- */
 function isRTL(txt){
-    return /[\u0600-\u06FF]/.test(txt); // huruf Arab
+    return /[\u0600-\u06FF]/.test(txt);
 }
+
 function addSoal(){
-    let t=document.getElementById("soalInput").value.trim();
+    const t = document.getElementById("soalInput").value.trim();
     if(!t){ toast("Tulis soal dulu"); return; }
 
     daftar.push({
@@ -534,241 +460,119 @@ function addSoal(){
         direction: modeArab ? "rtl" : "ltr"
     });
 
-    document.getElementById("soalInput").value="";
+    document.getElementById("soalInput").value = "";
     save();
     toast("Soal ditambahkan!");
 }
+
+/* EDIT */
 let editingIndex = null;
-
 function editItem(i){
-    let s = daftar[i];
-
-    // isi teks ke textarea edit
+    const s = daftar[i];
     document.getElementById("editQuestion").value = s.text;
-
-    // atur arah teks
-    document.getElementById("editQuestion").style.direction = s.direction;
-    document.getElementById("editQuestion").style.textAlign = 
-        s.direction === "rtl" ? "right" : "left";
-
+    document.getElementById("editQuestion").style.direction = s.direction || (s.mode === "arab" ? "rtl" : "ltr");
+    document.getElementById("editQuestion").style.textAlign = (s.direction === "rtl" || s.mode === "arab") ? "right" : "left";
     editingIndex = i;
-
-    // buka modal
     document.getElementById("editModal").style.display = "flex";
 }
-
-/* RESET */
-function hideConfirm(){
-    document.getElementById("confirmOverlay").style.display="none";
+function closeEdit(){
+    document.getElementById("editModal").style.display = "none";
 }
-function doReset(){
-    daftar=[];
+function saveEdit(){
+    const newText = document.getElementById("editQuestion").value.trim();
+    if(!newText){ toast("Teks kosong"); return; }
+
+    const dir = isRTL(newText) ? "rtl" : "ltr";
+    daftar[editingIndex].text = newText;
+    daftar[editingIndex].direction = dir;
+    daftar[editingIndex].mode = dir === "rtl" ? "arab" : "latin";
+
     save();
-    hideConfirm();
-    toast("Semua soal direset");
+    closeEdit();
+    toast("Soal diperbarui!");
 }
-let deleteIndex = null;
 
-/* SHOW modal delete */
+/* -------------------------
+   DELETE & RESET
+   ------------------------- */
+let deleteIndex = null;
 function showDeleteConfirm(i){
     deleteIndex = i;
     document.getElementById("deleteOverlay").style.display = "flex";
 }
-
-/* HIDE modal delete */
 function hideDeleteConfirm(){
     document.getElementById("deleteOverlay").style.display = "none";
 }
-
-/* PROSES HAPUS */
 function doDelete(){
     if(deleteIndex !== null){
         daftar.splice(deleteIndex, 1);
         save();
         toast("Soal dihapus");
     }
+    deleteIndex = null;
     hideDeleteConfirm();
 }
+
 function showConfirm(){
-    document.getElementById("confirmOverlay").style.display="flex";
+    document.getElementById("confirmOverlay").style.display = "flex";
 }
-
 function hideConfirm(){
-    document.getElementById("confirmOverlay").style.display="none";
+    document.getElementById("confirmOverlay").style.display = "none";
 }
-
 function doReset(){
     daftar = [];
     save();
     hideConfirm();
     toast("Semua soal direset");
 }
-/* --------------------------------------------------------------
+
+/* -------------------------
    TOGGLE MODE
--------------------------------------------------------------- */
+   ------------------------- */
 function toggleMode(){
-    modeArab=!modeArab;
-    const knob=document.getElementById("knob");
-    const inp=document.getElementById("soalInput");
-    const label=document.getElementById("modeLabel");
+    modeArab = !modeArab;
+    const knob = document.getElementById("knob");
+    const inp = document.getElementById("soalInput");
+    const label = document.getElementById("modeLabel");
 
     if(modeArab){
         knob.classList.add("rtl");
-        label.textContent="Arab (RTL)";
-        inp.dir="rtl"; inp.style.textAlign="right";
+        label.textContent = "Arab (RTL)";
+        inp.dir = "rtl"; inp.style.textAlign = "right";
     } else {
         knob.classList.remove("rtl");
-        label.textContent="Latin (LTR)";
-        inp.dir="ltr"; inp.style.textAlign="left";
+        label.textContent = "Latin (LTR)";
+        inp.dir = "ltr"; inp.style.textAlign = "left";
     }
 }
 
-/* --------------------------------------------------------------
-   PREVIEW
--------------------------------------------------------------- */
+/* -------------------------
+   PREVIEW (buka jendela print browser)
+   ------------------------- */
 function openPreview(){
-    if(!daftar.length){
-        toast("Belum ada soal");
-        return;
-    }
+    if(!daftar.length){ toast("Belum ada soal"); return; }
 
-    let sem = document.getElementById("semester").value;
-    let th = document.getElementById("tahun").value;
-    let fan = document.getElementById("fan").value;
-    let kelas = document.getElementById("kelas").value;
+    const sem = document.getElementById("semester").value;
+    const th = document.getElementById("tahun").value;
+    const fan = document.getElementById("fan").value;
+    const kelas = document.getElementById("kelas").value;
 
-	let html = `
-		<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+    let html = buildPaperHTML(sem, th, fan, kelas);
 
-		<!-- Logo kiri PPDA -->
-		<img src="https://i.imgur.com/ophjlHz.jpg" style="width:115px; height:auto;">
-
-		<!-- KOP -->
-		<div style="text-align:center; flex:1; font-size:13pt; font-weight:700; line-height:1.6;">
-			UJIAN AKHIR SEMESTER ${sem} <br>
-			MUHADHOROH “MANBAUS SHOLAH” <br>
-			PONDOK PESANTREN DARUTTAUHID AL ALAWI <br>
-			TAHUN PELAJARAN ${th}
-		</div>
-
-		<!-- Logo kanan MADIN -->
-		<img src="https://i.imgur.com/krmDDLO.jpg" style="width:115px; height:auto;">
-
-		</div>
-
-		<div style="border-bottom: 2px solid black; margin: 10px 0 15px 0;"></div>
-
-
-		<!-- IDENTITAS -->
-		<div style="display:flex; gap:10px; margin:18px 0; align-items:flex-start;">
-
-			<!-- Fan & Kelas -->
-			<table style="width:6.2cm; font-size:12pt; line-height:1.1;">
-				<tr>
-					<td style="padding:10px 0; width:auto;">Fan</td>
-					<td style="padding:10px 0; width:auto;">:</td>
-					<td style="padding:10px 0;">${fan}</td>
-				</tr>
-				<tr>
-					<td style="padding:10px 0;">Kelas</td>
-					<td style="padding:10px 0;">:</td>
-					<td style="padding:10px 0;">${kelas}</td>
-				</tr>
-			</table>
-
-			<!-- Nama & No Ujian -->
-			<table style="width:8.3cm; font-size:12pt; line-height:1.1;">
-				<tr>
-					<td style="padding:10px 0; width:2.6cm;">Nama</td>
-					<td style="padding:10px 0; width:0.4cm;">:</td>
-					<td style="padding:10px 0;">..................................................</td>
-				</tr>
-				<tr>
-					<td style="padding:10px 0;">No. Ujian</td>
-					<td style="padding:10px 0;">:</td>
-					<td style="padding:10px 0;">..................................................</td>
-				</tr>
-			</table>
-
-			<!-- Kotak Nilai -->
-			<table style="width:4cm; font-size:12pt; border:1px solid black; text-align:center;">
-				<tr>
-					<td style="padding:5px; border-bottom:1px solid black; font-weight:bold;">NILAI</td>
-				</tr>
-				<tr>
-					<td style="padding:10px 0;">&nbsp;</td>
-				</tr>
-			</table>
-
-		</div>
-		<div style="border-bottom: 1px solid black; margin: 10px 0 20px 0;"></div>
-		
-		<!-- TEKS ARAB -->
-		<p style="font-size:20pt; font-weight:bold; text-decoration:underline; text-align:center;">
-		  <span dir="rtl">أجب هذه الأسئلة بأجوبة موافقة !</span>
-		</p>
-
-	`;
-
-
-	daftar.forEach((it, i) => {
-		if (it.mode === "arab") {
-			html += `
-			<div style="margin-bottom:12px; direction:rtl;">
-				<table style="width:100%; border-collapse:collapse; font-family:'Scheherazade New', serif; font-size:16pt;">
-					<tr>
-						<td style="width:28px; white-space:nowrap; vertical-align:top; padding-left:5px;">
-							${toArabicNumber(i+1)}.
-						</td>
-						<td style="text-align:right; vertical-align:top;">
-							${it.text}
-						</td>
-					</tr>
-				</table>
-			</div>
-
-			`;
-		} else {
-			html += `
-			<div style="margin-bottom:12px; direction:ltr;">
-				<table style="width:100%; border-collapse:collapse; font-size:14pt;">
-					<tr>
-						<td style="width:28px; white-space:nowrap; vertical-align:top; padding-right:4px;">
-							${i+1}.
-						</td>
-						<td style="vertical-align:top;">
-							${it.text}
-						</td>
-					</tr>
-				</table>
-			</div>
-
-			`;
-		}
-	});
-
-    // === CETAK PAKAI IFRAME (PALING AMAN) ===
-    const frame = document.getElementById("printFrame");
-    const doc = frame.contentWindow.document;
-
-    doc.open();
-    doc.write(`
+    // show preview in a new window (print-friendly)
+    const w = window.open('', '_blank');
+    w.document.open();
+    w.document.write(`
         <html>
         <head>
-		<title>SOAL - ${fan} - Kelas ${kelas}</title>
+            <title>Preview Soal</title>
+            <meta charset="utf-8" />
+            <link href="https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
             <style>
-			    @page { 
-						size: 210mm 330mm; 
-						margin: 10mm 5mm 5mm 5mm; /* atas | kanan | bawah | kiri */
-					  }
-
-                body { font-family: Arial, sans-serif; }
-                .paper {
-                    width:210mm;
-                    min-height:330mm;
-                    padding:10mm;
-                    box-sizing:border-box;
-                }
+                body{ margin:0; font-family: Arial, Helvetica, sans-serif; color:#000; padding:10mm; }
+                .paper{ width:210mm; min-height:330mm; box-sizing:border-box; }
+                .pdf-arab { font-family: 'Scheherazade New', serif; direction:rtl; text-align:right; }
+                table{ width:100%; border-collapse:collapse; }
             </style>
         </head>
         <body>
@@ -776,177 +580,70 @@ function openPreview(){
         </body>
         </html>
     `);
-    doc.close();
-// SIMPAN html ke printArea untuk PDF
-document.getElementById("printArea").innerHTML = html;
-
-    setTimeout(() => {
-        frame.contentWindow.focus();
-        frame.contentWindow.print();
-    }, 150);
+    w.document.close();
+    // user can print from browser
 }
 
-function printPDF(){
-    const iframe = document.getElementById("printFrame");
-    const doc = iframe.contentWindow.document;
-
-    // Ambil HTML yang mau dicetak
-    const content = document.getElementById("printArea").innerHTML;
-
-    doc.open();
-    doc.write(`
-        <html>
-        <head>
-            <title>Cetak Soal</title>
-            <style>
-                @page {
-                    size: 210mm 330mm; /* F4 */
-                    margin: 15mm;
-                }
-                body {
-                    margin:0;
-                    font-family: Arial, Helvetica, sans-serif;
-                }
-                .paper {
-                    width:210mm;
-                    min-height:330mm;
-                    padding:15mm;
-                    box-sizing:border-box;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="paper">
-                ${content}
+/* helper untuk membuat HTML isi paper */
+function buildPaperHTML(sem, th, fan, kelas){
+    let html = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <img src="https://i.imgur.com/ophjlHz.jpg" style="width:115px; height:auto;">
+            <div style="text-align:center; flex:1; font-size:13pt; font-weight:700; line-height:1.6;">
+                UJIAN AKHIR SEMESTER ${sem} <br>
+                MUHADHOROH “MANBAUS SHOLAH” <br>
+                PONDOK PESANTREN DARUTTAUHID AL ALAWI <br>
+                TAHUN PELAJARAN ${th}
             </div>
-        </body>
-        </html>
-    `);
-    doc.close();
-
-    // Tunggu sebentar lalu print
-    setTimeout(() => {
-        iframe.contentWindow.focus();
-        iframe.contentWindow.print();
-    }, 150);
-}
-function closeEdit() {
-  document.getElementById("editModal").style.display = "none";
-}
-function saveEdit(){
-    let newText = document.getElementById("editQuestion").value.trim();
-
-    let dir = isRTL(newText) ? "rtl" : "ltr";
-
-    daftar[editingIndex].text = newText;
-    daftar[editingIndex].direction = dir;
-    daftar[editingIndex].mode = dir === "rtl" ? "arab" : "latin";
-
-    save();
-    closeEdit();
-
-    toast("Soal diperbarui!");
-}
-function downloadPDF() {
-    if (!daftar.length) {
-        toast("Belum ada soal");
-        return;
-    }
-
-    let sem = document.getElementById("semester").value;
-    let th = document.getElementById("tahun").value;
-    let fan = document.getElementById("fan").value;
-    let kelas = document.getElementById("kelas").value;
-
-    // Input judul PDF (opsional)
-    let customTitle = document.getElementById("judulPdf")?.value.trim();
-    let filename = customTitle !== "" ? customTitle : `${kelas} - ${fan}`;
-
-    // Ambil konten hasil openPreview
-    let html = document.getElementById("printArea").innerHTML;
-
-    // Bungkus HTML untuk PDF
-    let wrapper = document.createElement("div");
-    wrapper.style.width = "210mm";
-    wrapper.style.minHeight = "330mm";
-    wrapper.style.padding = "15mm";
-    wrapper.style.boxSizing = "border-box";
-    wrapper.innerHTML = html;
-
-    document.body.appendChild(wrapper);
-
-    let opt = {
-        margin: 10,
-        filename: filename + ".pdf",
-        image: { type: "jpeg", quality: 1 },
-        html2canvas: { scale: 3 },
-        jsPDF: { unit: "mm", format: [210, 330], orientation: "portrait" }
-    };
-
-    html2pdf().set(opt).from(wrapper).save().then(() => {
-        wrapper.remove();
-    });
-}
-
-    if (!daftar.length) {
-        toast("Belum ada soal");
-        return;
-    }
-
-    let sem = document.getElementById("semester").value;
-    let th = document.getElementById("tahun").value;
-    let fan = document.getElementById("fan").value;
-    let kelas = document.getElementById("kelas").value;
-
-    // Input judul dari user
-    let customTitle = document.getElementById("judulPdf")?.value.trim();
-
-    // Jika kosong → pakai default "Kelas - Fan"
-    let filename = customTitle !== "" ? customTitle : `${kelas} - ${fan}`;
-
-    // === BANGUN ULANG HTML (copy dari openPreview) ===
-    let html = document.getElementById("printArea")
-        ? document.getElementById("printArea").innerHTML
-        : "";
-
-    // Buat container untuk html2pdf
-    let wrapper = document.createElement("div");
-    wrapper.innerHTML = `
-        <div style="width:210mm; min-height:330mm; padding:15mm; box-sizing:border-box;">
-            ${html}
+            <img src="https://i.imgur.com/krmDDLO.jpg" style="width:115px; height:auto;">
         </div>
+
+        <div style="border-bottom: 2px solid black; margin: 10px 0 15px 0;"></div>
+
+        <div style="display:flex; gap:10px; margin:18px 0; align-items:flex-start;">
+            <table style="width:6.2cm; font-size:12pt; line-height:1.1;">
+                <tr>
+                    <td style="padding:10px 0; width:auto;">Fan</td><td style="padding:10px 0;">:</td><td style="padding:10px 0;">${escapeHtml(fan)}</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px 0;">Kelas</td><td style="padding:10px 0;">:</td><td style="padding:10px 0;">${escapeHtml(kelas)}</td>
+                </tr>
+            </table>
+
+            <table style="width:8.3cm; font-size:12pt; line-height:1.1;">
+                <tr>
+                    <td style="padding:10px 0; width:2.6cm;">Nama</td><td style="padding:10px 0; width:0.4cm;">:</td><td style="padding:10px 0;">..................................................</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px 0;">No. Ujian</td><td style="padding:10px 0;">:</td><td style="padding:10px 0;">..................................................</td>
+                </tr>
+            </table>
+
+            <table style="width:4cm; font-size:12pt; border:1px solid black; text-align:center;">
+                <tr><td style="padding:5px; border-bottom:1px solid black; font-weight:bold;">NILAI</td></tr>
+                <tr><td style="padding:10px 0;">&nbsp;</td></tr>
+            </table>
+        </div>
+
+        <div style="border-bottom: 1px solid black; margin: 10px 0 20px 0;"></div>
+
+        <p style="font-size:20pt; font-weight:bold; text-decoration:underline; text-align:center;">
+            <span class="pdf-arab" dir="rtl">أجب هذه الأسئلة بأجوبة موافقة !</span>
+        </p>
     `;
 
-    document.body.appendChild(wrapper);
-
-    let opt = {
-        margin: 10,
-        filename: filename + ".pdf",
-        image: { type: "jpeg", quality: 1 },
-        html2canvas: { scale: 3 },
-        jsPDF: { unit: "mm", format: [210, 330], orientation: "portrait" }
-    };
-
-    html2pdf().set(opt).from(wrapper).save().then(() => {
-        wrapper.remove();
-    });
-}
-
-/* INIT */
-renderList();
-</script>
-<div id="editModal" class="modal">
-  <div class="edit-box">
-    <h2 class="modal-title">Edit Soal</h2>
-
-    <label class="input-label">Teks Soal</label>
-    <textarea id="editQuestion" class="input-field textarea"></textarea>
-
-    <div class="modal-actions">
-      <button class="btn cancel" onclick="closeEdit()">Batal</button>
-      <button class="btn save" onclick="saveEdit()">Simpan</button>
-    </div>
-  </div>
-</div>
-</body>
-</html>
+    daftar.forEach((it, i) => {
+        if(it.mode === "arab"){
+            html += `
+                <div style="font-size:18pt; margin-bottom:12px; direction:rtl;">
+                    <table style="width:100%; border-collapse:collapse; font-family:'Scheherazade New', serif;">
+                        <tr>
+                            <td style="width:28px; white-space:nowrap; vertical-align:top; padding-left:5px;">${toArabicNumber(i+1)}.</td>
+                            <td style="text-align:right; vertical-align:top;" class="pdf-arab">${escapeHtml(it.text)}</td>
+                        </tr>
+                    </table>
+                </div>
+            `;
+        } else {
+            html += `
+                <div style="font-size:16pt; margin-bottom:12px; direction
