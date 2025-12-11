@@ -681,48 +681,52 @@ function closeRename(){
 
 function confirmDownloadPDF(){
     const raw = document.getElementById("fileNameInput").value.trim();
-    const filename = (raw || "Soal_Ujian") + ".pdf";
-    closeRename();
+    const filename = (raw || "Soal_Ujian").replace(/\s+/g, "_");
 
-    // build content and run html2pdf
+    closeRename();
+    generatePDF(filename);
+}
+
+function generatePDF(filename){
+    if(!daftar.length){
+        toast("Belum ada soal");
+        return;
+    }
+
     const sem = document.getElementById("semester").value;
     const th = document.getElementById("tahun").value;
     const fan = document.getElementById("fan").value;
     const kelas = document.getElementById("kelas").value;
 
-    const contentHtml = `<div class="paper">${buildPaperHTML(sem, th, fan, kelas)}</div>`;
+    // HTML isi PDF
+    const htmlContent = `
+        <div class="paper" style="font-family:Arial,Helvetica,sans-serif; color:#000;">
+            ${buildPaperHTML(sem, th, fan, kelas)}
+        </div>
+    `;
 
-    // create temporary container
-    const container = document.createElement("div");
-    container.style.position = "fixed";
-    container.style.left = "-9999px";
-    container.style.top = "0";
-    container.innerHTML = contentHtml;
-    // ensure fonts available
-    container.querySelectorAll('.pdf-arab').forEach(el=>{
+    // Elemen sementara untuk PDF
+    const temp = document.createElement("div");
+    temp.innerHTML = htmlContent;
+    document.body.appendChild(temp);
+
+    // Paksa semua teks Arab pakai Scheherazade New
+    temp.querySelectorAll(".pdf-arab").forEach(el=>{
         el.style.fontFamily = "'Scheherazade New', serif";
+        el.style.direction = "rtl";
+        el.style.textAlign = "right";
     });
-    document.body.appendChild(container);
 
-    // html2pdf options suited for F4 / custom size
     const opt = {
-        margin: [10, 5, 5, 5], // mm top right bottom left
-        filename: filename,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, allowTaint: true },
-        jsPDF: { unit: 'mm', format: [330,210], orientation: 'portrait' } // F4 as 210 x 330
+        margin: 0,
+        filename: filename + ".pdf",
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
     };
 
-    // run
-    html2pdf().set(opt).from(container).save()
-    .then(() => {
-        toast("Download dimulai");
-        document.body.removeChild(container);
-    })
-    .catch(err=>{
-        console.error(err);
-        toast("Gagal membuat PDF");
-        document.body.removeChild(container);
+    html2pdf().set(opt).from(temp).save().then(()=>{
+        temp.remove();
     });
 }
 
