@@ -370,6 +370,7 @@ input, select, textarea {
 }
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 
 <body>
@@ -439,7 +440,8 @@ input, select, textarea {
             <tbody id="tbodySoal"></tbody>
         </table>
 
-        <button onclick="openPreview()">Lihat & Download</button>
+        <button onclick="openPreview()">Lihat & Print Browser</button>
+		<button style="margin-top:10px;background:#28a745" onclick="downloadPDF()">Download PDF</button>
         <button class="red" onclick="showConfirm()">Reset</button>
     </div>
 
@@ -708,33 +710,35 @@ function openPreview(){
 	daftar.forEach((it, i) => {
 		if (it.mode === "arab") {
 			html += `
-				<div style="font-size:18pt; margin-bottom:12px; direction:rtl;">
-					<table style="width:100%; border-collapse:collapse; font-family:'Scheherazade New', serif;">
-						<tr>
-							<td style="width:28px; white-space:nowrap; vertical-align:top; padding-left:5px;">
-								${toArabicNumber(i+1)}.
-							</td>
-							<td style="text-align:right; vertical-align:top;">
-								${it.text}
-							</td>
-						</tr>
-					</table>
-				</div>
+			<div style="margin-bottom:12px; direction:rtl;">
+				<table style="width:100%; border-collapse:collapse; font-family:'Scheherazade New', serif; font-size:16pt;">
+					<tr>
+						<td style="width:28px; white-space:nowrap; vertical-align:top; padding-left:5px;">
+							${toArabicNumber(i+1)}.
+						</td>
+						<td style="text-align:right; vertical-align:top;">
+							${it.text}
+						</td>
+					</tr>
+				</table>
+			</div>
+
 			`;
 		} else {
 			html += `
-				<div style="font-size:16pt; margin-bottom:12px; direction:ltr;">
-					<table style="width:100%; border-collapse:collapse;">
-						<tr>
-							<td style="width:28px; white-space:nowrap; vertical-align:top; padding-right:4px;">
-								${i+1}.
-							</td>
-							<td style="vertical-align:top;">
-								${it.text}
-							</td>
-						</tr>
-					</table>
-				</div>
+			<div style="margin-bottom:12px; direction:ltr;">
+				<table style="width:100%; border-collapse:collapse; font-size:14pt;">
+					<tr>
+						<td style="width:28px; white-space:nowrap; vertical-align:top; padding-right:4px;">
+							${i+1}.
+						</td>
+						<td style="vertical-align:top;">
+							${it.text}
+						</td>
+					</tr>
+				</table>
+			</div>
+
 			`;
 		}
 	});
@@ -747,7 +751,7 @@ function openPreview(){
     doc.write(`
         <html>
         <head>
-            <title>Cetak Soal</title>
+		<title>SOAL - ${fan} - Kelas ${kelas}</title>
             <style>
 			    @page { 
 						size: 210mm 330mm; 
@@ -837,6 +841,46 @@ function saveEdit(){
 
     toast("Soal diperbarui!");
 }
+function downloadPDF(){
+    if(!daftar.length){
+        toast("Belum ada soal");
+        return;
+    }
+
+    let sem = document.getElementById("semester").value;
+    let th = document.getElementById("tahun").value;
+    let fan = document.getElementById("fan").value;
+    let kelas = document.getElementById("kelas").value;
+
+    // Generate ulang HTML seperti openPreview()
+    let frame = document.getElementById("printFrame");
+    let doc = frame.contentWindow.document;
+
+    // Buat isi PDF
+    let pageHTML = `
+    <div id='paperPDF' style='width:210mm; min-height:330mm; padding:15mm; box-sizing:border-box;'>
+        ${document.querySelector(".paper") ? document.querySelector(".paper").innerHTML : "" }
+    </div>
+    `;
+
+    // Buat node untuk PDF
+    let temp = document.createElement("div");
+    temp.innerHTML = pageHTML;
+    document.body.appendChild(temp);
+
+    let opt = {
+        margin: 10,
+        filename: `${fan}-${kelas}.pdf`,
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: { scale: 3 },
+        jsPDF: { unit: 'mm', format: [210,330], orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(temp).save().then(()=>{
+        temp.remove();
+    });
+}
+
 /* INIT */
 renderList();
 </script>
