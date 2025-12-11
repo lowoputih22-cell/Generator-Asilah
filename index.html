@@ -354,18 +354,36 @@ table td{
 </div>
 
 <!-- MODAL RENAME & DOWNLOAD (kecil seperti edit) -->
-<div id="renameModal" class="modal" aria-hidden="true">
-  <div class="edit-box" role="dialog" aria-modal="true">
-    <h2 class="modal-title">Nama File PDF</h2>
+<div id="downloadModal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-bottom:10px;">Pengaturan PDF</h3>
 
-    <label class="input-label">Nama File</label>
-    <input id="fileNameInput" class="input-field" />
+        <!-- PILIH UKURAN KERTAS -->
+        <label>Ukuran Kertas:</label>
+        <select id="paperSize" style="width:100%; padding:8px; margin-bottom:15px;">
+            <option value="f4" selected>F4 (folio)</option>
+            <option value="a4">A4</option>
+            <option value="letter">Letter</option>
+            <option value="legal">Legal</option>
+        </select>
 
-    <div class="modal-actions" style="display:flex;justify-content:flex-end;">
-      <button class="btn cancel" onclick="closeRename()">Batal</button>
-      <button class="btn save" onclick="confirmDownloadPDF()">Download</button>
+        <!-- MARGIN -->
+        <label>Margin (cm):</label>
+        <select id="marginSize" style="width:100%; padding:8px; margin-bottom:15px;">
+            <option value="1.5" selected>1.5 cm</option>
+            <option value="1">1 cm</option>
+            <option value="2">2 cm</option>
+            <option value="2.5">2.5 cm</option>
+            <option value="3">3 cm</option>
+        </select>
+
+        <!-- RENAME FILE -->
+        <label>Nama File:</label>
+        <input id="pdfName" type="text" style="width:100%; padding:8px; margin-bottom:20px;">
+
+        <button onclick="generatePDF()" class="btn-primary">Download</button>
+        <button onclick="closeDownloadModal()" class="btn-secondary">Batal</button>
     </div>
-  </div>
 </div>
 
 <!-- SCRIPT: html2pdf (CDN) digunakan untuk export PDF -->
@@ -761,6 +779,44 @@ function escapeHtml(str){
         .replaceAll("'", "&#039;");
 }
 
+function getPaperSize(size) {
+    switch(size) {
+        case "a4":
+            return { width: 595.28, height: 841.89 }; // A4
+        case "letter":
+            return { width: 612, height: 792 };       // Letter
+        case "legal":
+            return { width: 612, height: 1008 };      // Legal
+        case "f4":
+        default:
+            return { width: 612, height: 935 };       // F4 Folio (21.5 × 33 cm)
+    }
+}
+
+function generatePDF() {
+    let size = document.getElementById("paperSize").value;
+    let marginCm = parseFloat(document.getElementById("marginSize").value);
+    let fileName = document.getElementById("pdfName").value || "Dokumen";
+
+    let margin = marginCm * 28.346; // CM → PDF points
+
+    let paper = getPaperSize(size);
+
+    let element = document.getElementById("print-area");
+
+    let opt = {
+        margin: margin,
+        filename: fileName + ".pdf",
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: { scale: 3 },
+        jsPDF: {
+            unit: 'pt',
+            format: [paper.width, paper.height],
+            orientation: 'portrait'
+        }
+    };
+
+    html2pdf().set(opt).from(element).save();
 /* -------------------------
    INIT
    ------------------------- */
